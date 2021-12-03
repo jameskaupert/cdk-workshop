@@ -1,9 +1,8 @@
-import * as cdk from "@aws-cdk/core";
-import * as lambda from "@aws-cdk/aws-lambda";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
+import { aws_dynamodb, aws_lambda } from "aws-cdk-lib";
+import { Construct } from "constructs";
 
 export interface HitCounterProps {
-  downstream: lambda.IFunction;
+  downstream: aws_lambda.IFunction;
   /**
    * The read capacity units for the table
    *
@@ -14,10 +13,10 @@ export interface HitCounterProps {
   readCapacity?: number;
 }
 
-export class HitCounter extends cdk.Construct {
-  public readonly handler: lambda.Function;
+export class HitCounter extends Construct {
+  public readonly handler: aws_lambda.Function;
 
-  constructor(scope: cdk.Construct, id: string, props: HitCounterProps) {
+  constructor(scope: any, id: string, props: HitCounterProps) {
     if (
       props.readCapacity !== undefined &&
       (props.readCapacity < 5 || props.readCapacity > 20)
@@ -26,16 +25,16 @@ export class HitCounter extends cdk.Construct {
     }
     super(scope, id);
 
-    const table = new dynamodb.Table(this, "Hits", {
-      partitionKey: { name: "path", type: dynamodb.AttributeType.STRING },
-      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+    const table = new aws_dynamodb.Table(this, "Hits", {
+      partitionKey: { name: "path", type: aws_dynamodb.AttributeType.STRING },
+      encryption: aws_dynamodb.TableEncryption.AWS_MANAGED,
       readCapacity: props.readCapacity ?? 5,
     });
 
-    this.handler = new lambda.Function(this, "HitCounterHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+    this.handler = new aws_lambda.Function(this, "HitCounterHandler", {
+      runtime: aws_lambda.Runtime.NODEJS_14_X,
       handler: "hitcounter.handler",
-      code: lambda.Code.fromAsset("lambda"),
+      code: aws_lambda.Code.fromAsset("lambda"),
       environment: {
         DOWNSTREAM_FUNCTION_NAME: props.downstream.functionName,
         HITS_TABLE_NAME: table.tableName,

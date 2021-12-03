@@ -1,41 +1,38 @@
-import { Template, Capture } from "@aws-cdk/assertions";
-import * as cdk from "@aws-cdk/core";
-import * as lambda from "@aws-cdk/aws-lambda";
+import { assertions, aws_lambda, Stack } from "aws-cdk-lib";
 import { HitCounter } from "../lib/hitcounter";
-import { template } from "@babel/core";
 
 test("DynamoDB Table Created", () => {
-  const stack = new cdk.Stack();
+  const stack = new Stack();
 
   // WHEN
   new HitCounter(stack, "MyTestConstruct", {
-    downstream: new lambda.Function(stack, "TestFunction", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+    downstream: new aws_lambda.Function(stack, "TestFunction", {
+      runtime: aws_lambda.Runtime.NODEJS_14_X,
       handler: "hello.handler",
-      code: lambda.Code.fromAsset("lambda"),
+      code: aws_lambda.Code.fromAsset("lambda"),
     }),
   });
 
   // THEN
-  const template = Template.fromStack(stack);
+  const template = assertions.Template.fromStack(stack);
   template.resourceCountIs("AWS::DynamoDB::Table", 1);
 });
 
 test("Lambda Function created with env vars", () => {
-  const stack = new cdk.Stack();
+  const stack = new Stack();
 
   // WHEN
   new HitCounter(stack, "MyTestConstruct", {
-    downstream: new lambda.Function(stack, "TestFunction", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+    downstream: new aws_lambda.Function(stack, "TestFunction", {
+      runtime: aws_lambda.Runtime.NODEJS_14_X,
       handler: "hello.handler",
-      code: lambda.Code.fromAsset("lambda"),
+      code: aws_lambda.Code.fromAsset("lambda"),
     }),
   });
 
   // THEN
-  const template = Template.fromStack(stack);
-  const envCapture = new Capture();
+  const template = assertions.Template.fromStack(stack);
+  const envCapture = new assertions.Capture();
   template.hasResourceProperties("AWS::Lambda::Function", {
     Environment: envCapture,
   });
@@ -53,19 +50,19 @@ test("Lambda Function created with env vars", () => {
 });
 
 test("DynamoDB Table Created With Encryption", () => {
-  const stack = new cdk.Stack();
+  const stack = new Stack();
 
   //WHEN
   new HitCounter(stack, "MyTestConstruct", {
-    downstream: new lambda.Function(stack, "TestFunction", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+    downstream: new aws_lambda.Function(stack, "TestFunction", {
+      runtime: aws_lambda.Runtime.NODEJS_14_X,
       handler: "hello.handler",
-      code: lambda.Code.fromAsset("lambda"),
+      code: aws_lambda.Code.fromAsset("lambda"),
     }),
   });
 
   //THEN
-  const template = Template.fromStack(stack);
+  const template = assertions.Template.fromStack(stack);
   template.hasResourceProperties("AWS::DynamoDB::Table", {
     SSESpecification: {
       SSEEnabled: true,
@@ -74,14 +71,14 @@ test("DynamoDB Table Created With Encryption", () => {
 });
 
 test("read capacity must be >5", () => {
-  const stack = new cdk.Stack();
+  const stack = new Stack();
 
   expect(() => {
     new HitCounter(stack, "MyTestConstruct", {
-      downstream: new lambda.Function(stack, "TestFunction", {
-        runtime: lambda.Runtime.NODEJS_14_X,
+      downstream: new aws_lambda.Function(stack, "TestFunction", {
+        runtime: aws_lambda.Runtime.NODEJS_14_X,
         handler: "hello.handler",
-        code: lambda.Code.fromAsset("lambda"),
+        code: aws_lambda.Code.fromAsset("lambda"),
       }),
       readCapacity: 4,
     });
@@ -89,14 +86,14 @@ test("read capacity must be >5", () => {
 });
 
 test("read capacity must be <20", () => {
-  const stack = new cdk.Stack();
+  const stack = new Stack();
 
   expect(() => {
     new HitCounter(stack, "MyTestConstruct", {
-      downstream: new lambda.Function(stack, "TestFunction", {
-        runtime: lambda.Runtime.NODEJS_14_X,
+      downstream: new aws_lambda.Function(stack, "TestFunction", {
+        runtime: aws_lambda.Runtime.NODEJS_14_X,
         handler: "hello.handler",
-        code: lambda.Code.fromAsset("lambda"),
+        code: aws_lambda.Code.fromAsset("lambda"),
       }),
       readCapacity: 21,
     });
